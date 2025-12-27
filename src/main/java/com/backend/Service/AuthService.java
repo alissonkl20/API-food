@@ -4,6 +4,7 @@ package com.backend.Service;
 import com.backend.DTO.LoginRequestDTO;
 import com.backend.DTO.LoginResponseDTO;
 import com.backend.DTO.RegistroClienteDTO;
+import com.backend.DTO.RecuperarSenhaRequestDTO;
 import com.backend.config.JwtTokenProvider;
 import com.backend.model.ClientModel;
 import com.backend.model.UsuarioModel;
@@ -12,6 +13,9 @@ import com.backend.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class AuthService {
@@ -57,14 +61,14 @@ public class AuthService {
         usuario.setRole(UsuarioModel.Role.ROLE_CLIENTE);
         usuario.setAtivo(true);
 
-        UsuarioModel usuarioSalvo = usuarioRepository.save(usuario);
+        usuarioRepository.save(usuario);
 
         // Criar cliente
         ClientModel cliente = new ClientModel();
         cliente.setNome(registroDTO.getNome());
-        cliente.setTelefone(registroDTO.getTelefone());
         cliente.setEndereco(registroDTO.getEndereco());
-        cliente.setUsuario(usuarioSalvo);
+        cliente.setTelefone(registroDTO.getTelefone());
+        cliente.setUsuario(usuario);
 
         return clientRepository.save(cliente);
     }
@@ -75,9 +79,31 @@ public class AuthService {
         }
 
         usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
-        usuario.setRole(UsuarioModel.Role.ROLE_ADMIN);
+        usuario.setRole(UsuarioModel.Role.ROLE_SUPER_ADMIN);
         usuario.setAtivo(true);
 
         return usuarioRepository.save(usuario);
+    }
+
+    public String recuperarSenha(RecuperarSenhaRequestDTO request) {
+        Optional<ClientModel> clienteOpt = clientRepository.findByEmail(request.getEmail());
+        if (clienteOpt.isEmpty()) {
+            throw new RuntimeException("Cliente não encontrado para o e-mail fornecido.");
+        }
+
+        ClientModel cliente = clienteOpt.get();
+        UsuarioModel usuario = cliente.getUsuario();
+
+        String novaSenha = gerarNovaSenha();
+        usuario.setSenha(passwordEncoder.encode(novaSenha));
+        usuarioRepository.save(usuario);
+
+        // Em um cenário real, você enviaria a novaSenha por e-mail.
+        // Por simplicidade, estamos retornando a nova senha.
+        return novaSenha;
+    }
+
+    private String gerarNovaSenha() {
+        return UUID.randomUUID().toString().substring(0, 8);
     }
 }

@@ -30,7 +30,7 @@ public class UsuarioModel {
     private ClientModel cliente;
 
     public enum Role {
-        ROLE_ADMIN,
+        ROLE_SUPER_ADMIN,
         ROLE_CLIENTE
     }
 

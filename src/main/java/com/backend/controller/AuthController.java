@@ -4,6 +4,8 @@ package com.backend.controller;
 import com.backend.DTO.LoginRequestDTO;
 import com.backend.DTO.LoginResponseDTO;
 import com.backend.DTO.RegistroClienteDTO;
+import com.backend.DTO.RecuperarSenhaRequestDTO;
+import com.backend.DTO.RecuperarSenhaResponseDTO;
 import com.backend.model.ClientModel;
 import com.backend.model.UsuarioModel;
 import com.backend.Service.AuthService;
@@ -44,7 +46,7 @@ public class AuthController {
     }
 
     @PostMapping("/registrar/admin")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<UsuarioModel> registrarAdmin(@RequestBody UsuarioModel usuario) {
         UsuarioModel novoAdmin = authService.registrarAdmin(usuario);
         return ResponseEntity.status(HttpStatus.CREATED).body(novoAdmin);
@@ -59,5 +61,15 @@ public class AuthController {
     public String criptografarSenha(String senhaEmTextoPlano) {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         return encoder.encode(senhaEmTextoPlano);
+    }
+
+    @PostMapping("/recuperar-senha")
+    public ResponseEntity<?> recuperarSenha(@RequestBody RecuperarSenhaRequestDTO request) {
+        try {
+            String novaSenha = authService.recuperarSenha(request);
+            return ResponseEntity.ok(new RecuperarSenhaResponseDTO("Uma nova senha foi gerada e (em um cenário real) enviada para o seu e-mail. Nova senha para teste: " + novaSenha));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }
