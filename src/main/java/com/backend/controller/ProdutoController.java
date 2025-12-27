@@ -33,17 +33,22 @@ public class ProdutoController {
         return categoriaId != null ? this.produtoRepository.findByCategoriaId(categoriaId) : this.produtoRepository.findAll();
     }
 
+    @SuppressWarnings("null")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ProdutoModel criarProduto(@RequestBody ProdutoModel produtomodel) {
         return (ProdutoModel)this.produtoRepository.save(produtomodel);
     }
 
+    @SuppressWarnings("null")
     @GetMapping({"/{id}"})
     public ResponseEntity<ProdutoModel> buscarProdutoPorId(@PathVariable Long id) {
-        return (ResponseEntity)this.produtoRepository.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        return this.produtoRepository.findById(id)
+                .map(produto -> ResponseEntity.ok(produto))
+                .orElse(ResponseEntity.notFound().build());
     }
 
+    @SuppressWarnings("null")
     @PutMapping("/{id}")
     public ResponseEntity<ProdutoModel> atualizarProduto(
             @PathVariable Long id,
@@ -62,6 +67,7 @@ public class ProdutoController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @SuppressWarnings("null")
     @DeleteMapping({"/{id}"})
     public ResponseEntity<Void> deletarProduto(@PathVariable Long id) {
         if (!this.produtoRepository.existsById(id)) {

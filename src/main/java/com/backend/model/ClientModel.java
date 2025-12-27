@@ -1,29 +1,25 @@
 package com.backend.model;
 
-
 import jakarta.persistence.*;
+import lombok.Data;
 
 @Entity
-@Table
+@Table(name = "clientes")
+@Data
 public class ClientModel {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(unique = true, nullable = false)
-    private String email;
-    @Column(nullable = false)
-    private String senha;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private Role role; // ADMIN ou CLIENTE
+    private String nome;
+    private String telefone;
+    private String endereco;
 
-    private boolean ativo = true;
+    // Relacionamento com UsuarioModel
+    @OneToOne
+    @JoinColumn(name = "usuario_id", referencedColumnName = "id")
+    private UsuarioModel usuario;
 
-    // getters e setters
-
-    public enum Role {
-        ROLE_ADMIN,
-        ROLE_CLIENTE
-    }
+    // Outros campos específicos do cliente
 }
